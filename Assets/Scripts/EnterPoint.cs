@@ -10,15 +10,8 @@ public class EnterPoint : MonoBehaviour
 {
     [SerializeField] private Settings _settings;
     [SerializeField] private Canvas _targetCanvas;
-    private float _timeScale = 5;
+    private float _timeScale = 1;
     
-
-    // Однострочный комментарий
-
-    /*/
-        Многострочный комментарий
-        На две строки
-    /*/
     void Start()
     {
         Time.timeScale = _timeScale;

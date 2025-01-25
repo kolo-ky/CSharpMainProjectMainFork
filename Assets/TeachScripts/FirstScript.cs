@@ -7,14 +7,30 @@ public class FirstScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        int intVar = 1;
-        float floatVar = 3.4f;
-        string sringVar = "this is ";
-        string sumStringVar = "sum = ";
-        bool boolVar;
+        float firstNumber = 10;
+        float secondNumber = 5;
+        float summ;
+        float subtraction;
 
-        Debug.Log(sringVar + intVar);
-        Debug.Log(sringVar + floatVar);
-        Debug.Log(sumStringVar + (floatVar + intVar));
+        summ = GetSumm(firstNumber, secondNumber);
+        subtraction = GerSubtraction(firstNumber, secondNumber);
+
+        ConsoleLog(summ);
+        ConsoleLog(subtraction);
+    }
+
+    float GetSumm(float firstNumber, float secondNumber)
+    {
+        return firstNumber * secondNumber;
+    }
+
+    float GerSubtraction(float firstNumber, float secondNumber)
+    {
+        return firstNumber - secondNumber;
+    }
+
+    void ConsoleLog(float result)
+    {
+        Debug.Log(result);
     }
 }
