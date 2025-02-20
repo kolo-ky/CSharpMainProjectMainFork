@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Model;
 using Model.Runtime.Projectiles;
 using UnityEngine;
+using Utilities;
 
 namespace UnitBrains.Player
 {
@@ -13,13 +16,12 @@ namespace UnitBrains.Player
         private float _temperature = 0f;
         private float _cooldownTime = 0f;
         private bool _overheated;
+        private IEnumerable<Vector2Int> _allTargets;
+        private List<Vector2Int> _targetInRangeResult = new();
         
         protected override void GenerateProjectiles(Vector2Int forTarget, List<BaseProjectile> intoList)
         {
             float overheatTemperature = OverheatTemperature;
-            ///////////////////////////////////////
-            // Homework 1.3 (1st block, 3rd module)
-            /////////////////////////////////////// 
             var currentTemperature = GetTemperature();
 
             if (currentTemperature >= overheatTemperature)
@@ -35,51 +37,43 @@ namespace UnitBrains.Player
 
             
             IncreaseTemperature();
-            ///////////////////////////////////////
         }
 
         public override Vector2Int GetNextStep()
         {
-            return base.GetNextStep();
+            if (!_targetInRangeResult.Any())
+            {
+                return unit.Pos;;
+            }
+            
+            return  unit.Pos.CalcNextStepTowards(_targetInRangeResult.First());
         }
 
         protected override List<Vector2Int> SelectTargets()
         {
-            ///////////////////////////////////////
-            // Homework 1.4 (1st block, 4rd module)
-            ///////////////////////////////////////
-            List<Vector2Int> result = GetReachableTargets();
+            List<Vector2Int> result = new();
+            _allTargets = GetAllTargets();
+            _targetInRangeResult.Clear();
 
-            float minDistance = float.MinValue;
-            List<Vector2Int> resultOneTarget = new List<Vector2Int>();
-
-            foreach (Vector2Int target in result) 
+            if (_allTargets.Any())
             {
-                float targetDistance = DistanceToOwnBase(target);
+                var closestEnemyToBase = GetClosestEnemyToBase(_allTargets);
 
-                if (minDistance > targetDistance) 
+                if (IsTargetInRange(closestEnemyToBase))
                 {
-                    minDistance = targetDistance;
-                    resultOneTarget.Clear();
-                    resultOneTarget.Add(target);
+                    result.Add(closestEnemyToBase);
+                }
+                else
+                {
+                    _targetInRangeResult.Add(closestEnemyToBase);
                 }
             }
-
-            if (resultOneTarget.Count > 0) 
+            else
             {
-                result.Clear();
-                result.Insert(0, resultOneTarget[resultOneTarget.Count - 1]);
-
-                return result;
+                result.Add(runtimeModel.RoMap.Bases[RuntimeModel.BotPlayerId]);
             }
           
-
-            while (result.Count > 1)
-            {
-                result.RemoveAt(result.Count - 1);
-            }
             return result;
-            ///////////////////////////////////////
         }
 
         public override void Update(float deltaTime, float time)
@@ -96,7 +90,7 @@ namespace UnitBrains.Player
                 }
             }
         }
-
+        
         private int GetTemperature()
         {
             if(_overheated) return (int) OverheatTemperature;
@@ -107,6 +101,25 @@ namespace UnitBrains.Player
         {
             _temperature += 1f;
             if (_temperature >= OverheatTemperature) _overheated = true;
+        }
+
+        private Vector2Int GetClosestEnemyToBase(IEnumerable<Vector2Int> allTargets)
+        {
+            float minDistance = float.MaxValue;
+            Vector2Int resultClosestEnemy = new Vector2Int();
+            
+            foreach (Vector2Int target in allTargets) 
+            {
+                float targetDistance = DistanceToOwnBase(target);
+
+                if (targetDistance < minDistance) 
+                {
+                    minDistance = targetDistance;
+                    resultClosestEnemy = target;
+                }
+            }
+            
+            return resultClosestEnemy;
         }
     }
 }
