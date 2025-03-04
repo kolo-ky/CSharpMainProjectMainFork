@@ -18,6 +18,10 @@ namespace UnitBrains.Player
         private bool _overheated;
         private IEnumerable<Vector2Int> _allTargets;
         private List<Vector2Int> _targetInRangeResult = new();
+
+        private static int _unitCount = 0;
+        private int _id = _unitCount++;
+        private const int _maxEnemy = 3;
         
         protected override void GenerateProjectiles(Vector2Int forTarget, List<BaseProjectile> intoList)
         {
@@ -41,12 +45,17 @@ namespace UnitBrains.Player
 
         public override Vector2Int GetNextStep()
         {
+            
             if (!_targetInRangeResult.Any())
             {
-                return unit.Pos;;
+                return unit.Pos;
             }
             
-            return  unit.Pos.CalcNextStepTowards(_targetInRangeResult.First());
+            var enemyTarget = _id % _targetInRangeResult.Count;
+            
+            Debug.Log($"enemyTarget = {enemyTarget} _id = {_id} Count = {_targetInRangeResult.Count}");
+           
+            return  unit.Pos.CalcNextStepTowards(_targetInRangeResult[enemyTarget]);
         }
 
         protected override List<Vector2Int> SelectTargets()
@@ -72,7 +81,9 @@ namespace UnitBrains.Player
             {
                 result.Add(runtimeModel.RoMap.Bases[RuntimeModel.BotPlayerId]);
             }
-          
+
+            SortByDistanceToOwnBase(_targetInRangeResult);
+            
             return result;
         }
 
